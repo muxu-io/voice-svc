@@ -1,6 +1,6 @@
 [project]
 name = "voice-svc"
-version = "0.1.0"
+version = "1.0.0"
 description = "Local HTTP TTS service: text + a self-contained voice spec -> streamed PCM/WAV audio (XTTS-v2 + Piper)."
 requires-python = ">=3.11,<3.13"
 license = { text = "Apache-2.0" }
@@ -66,3 +66,19 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.black]
 line-length = 100
 target-version = ["py311"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+
+[tool.semantic_release.branches.main]
+match = "(main|master)"
+prerelease = false
+
+[tool.semantic_release.branches.maintenance]
+match = "^\\d+(\\.\\d+)?\\.x$"
+prerelease = false
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["build", "chore", "ci", "docs", "feat", "fix", "perf", "style", "refactor", "test"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf", "build"]
