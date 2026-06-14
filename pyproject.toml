@@ -1,0 +1,68 @@
+[project]
+name = "voice-svc"
+version = "0.1.0"
+description = "Local HTTP TTS service: text + a self-contained voice spec -> streamed PCM/WAV audio (XTTS-v2 + Piper)."
+requires-python = ">=3.11,<3.13"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "fastapi>=0.110,<1",
+  "uvicorn[standard]>=0.30,<1",
+  "pydantic>=2.6,<3",
+  "numpy>=1.26,<3",
+]
+
+[tool.poetry]
+packages = [{ include = "voice_svc", from = "src" }]
+
+# Optional, but locked: heavy engine stack. Installed in the image via
+# `poetry install --only main,engine`; skipped by light unit-test CI. Unit
+# tests only touch MockEngine and inject fakes for XTTS/Piper, so they import
+# none of these.
+[tool.poetry.group.engine]
+optional = true
+
+[tool.poetry.group.engine.dependencies]
+# idiap/coqui-ai-TTS (PyPI: coqui-tts) — the maintained Coqui fork; preserves
+# the `from TTS.api import TTS` import path used by the XTTS-v2 engine.
+coqui-tts = "*"
+torch = ">=2.2,<3"
+torchaudio = ">=2.2,<3"
+# torchcodec: recent torchaudio delegates torchaudio.load() to torchcodec;
+# without it XTTS's get_conditioning_latents(audio_path=...) raises ImportError.
+torchcodec = "*"
+# isin_mps_friendly (used by the fork's xtts) exists only in transformers
+# 4.41..4.48; the fork's own constraint is wider than what works at runtime.
+transformers = ">=4.43,<4.49"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+pytest-asyncio = ">=0.23"
+httpx = ">=0.27"
+ruff = ">=0.6"
+black = ">=24.0"
+bandit = ">=1.7"
+pip-audit = ">=2.7"
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q -m 'not integration and not gpu'"
+markers = [
+  "integration: spins up the built container in mock mode; requires docker and VOICE_SVC_IMAGE",
+  "gpu: spins up the built container with --gpus all and the real XTTS-v2 + Piper engines; requires an NVIDIA host",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]

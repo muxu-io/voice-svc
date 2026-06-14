@@ -13,11 +13,6 @@ That is what lets this run as an independent service.
 License: Apache-2.0 (service code). The XTTS-v2 / Piper model weights carry
 their own licenses and are downloaded (XTTS) or baked into the image (Piper).
 
-## Python version
-
-XTTS-v2 (Coqui TTS fork) constrains the stack to **Python 3.11**
-(`>=3.11,<3.13`). The Docker image uses Ubuntu 22.04's `python3.11`.
-
 ## Quickstart
 
 ```bash

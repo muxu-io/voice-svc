@@ -1,0 +1,38 @@
+services:
+  voice-svc:
+    image: ghcr.io/muxu-io/voice-svc:1.0.0
+    container_name: voice-svc
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    group_add:
+      - "${VOICE_SVC_GPU_GID:?set it via: VOICE_SVC_GPU_GID=$(stat -c '%g' /dev/nvidia0)}"
+    ports:
+      - "127.0.0.1:7000:7000"
+    volumes:
+      - voice-svc-models:/home/app/.local/share/tts
+      - voice-svc-hf-cache:/home/app/.cache/huggingface
+      - voice-svc-sample-cache:/home/app/.cache/voice-samples
+    environment:
+      VOICE_SVC_PORT: "7000"
+      VOICE_SVC_SAMPLE_CACHE_DIR: /home/app/.cache/voice-samples
+      HF_HOME: /home/app/.cache/huggingface
+      TTS_HOME: /home/app/.local/share/tts
+      COQUI_TOS_AGREED: "1"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7000/health || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  voice-svc-models:
+  voice-svc-hf-cache:
+  voice-svc-sample-cache:
